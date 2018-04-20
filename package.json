@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/danielmcq/yoda-reader/issues"
   },
-  "homepage": "https://github.com/danielmcq/yoda-reader#readme"
+  "homepage": "https://github.com/danielmcq/yoda-reader#readme",
+  "dependencies": {
+    "bmp-js": "^0.0.3"
+  }
 }
