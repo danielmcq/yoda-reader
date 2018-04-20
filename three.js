@@ -1,6 +1,8 @@
 'use strict'
 
 const fs = require('fs')
+const bmp = require('bmp-js')
+const bitmapManipulation = require('bitmap-manipulation')
 const path = require('path')
 
 const DATA_FILE_PATH = path.join(__dirname, 'YODESK.DTA')
@@ -68,21 +70,34 @@ function main (args=[]) {
             const unknown = buffer.readUInt32LE()
 
             // Bitmap tile = new Bitmap(32, 32);
-            // TODO
+            const bitmap = new bitmapManipulation.Bitmap(32, 32)
+            const bmpData = bitmap.data()
+            let bmpDataOffset = 0
 
             // for (int j = 0; j < 0x400; j++)
             for (let j = 0; j < 0x400; j++) {
-              // TODO
               // byte pixelData = binaryReader.ReadByte();
               fs.readSync(fd,buffer,0,1)
+
               // Color pixelColor = Color.FromArgb(pixelData, pixelData, pixelData);
               const pixelColor = buffer.readUInt8()
-              console.log('    pixelColor', pixelColor)
+              // console.log('    pixelColor', pixelColor)
+
               // tile.SetPixel(j % 32, j / 32, pixelColor);
+              bmpData[j%32,Math.floor(j/32)] = Buffer.from(new Uint8Array([pixelColor,pixelColor,pixelColor]))
+              // bmpDataOffset = bmpData.writeUInt8(pixelColor, bmpDataOffset)
+              // bmpDataOffset = bmpData.writeUInt8(pixelColor, bmpDataOffset)
+              // bmpDataOffset = bmpData.writeUInt8(pixelColor, bmpDataOffset)
             }
 
+if (i===0) {
             // tile.Save(string.Format(@"Tiles\{0}.png", i));
-            // TODO
+            // const rawData = bmp.encode({data: Buffer.from(Array.from(bmpData.values()).reverse()), height: 32, width: 32})
+console.log(bmpData)
+            const rawData = bmp.encode({data: bmpData, height: 32, width: 32})
+            const tileFilename = path.join(TILE_DIR_PATH, `./${i}.raw`)
+            fs.writeFileSync(tileFilename, rawData)
+}
           }
           break;
         case "ZONE":
@@ -99,12 +114,12 @@ function main (args=[]) {
             buffer = Buffer.alloc(4)
             fs.readSync(fd,buffer,0,4)
             const zoneLength = buffer.readUInt32LE()
-            console.log('    zoneLength',zoneLength)
+            // console.log('    zoneLength',zoneLength)
 
             // zoneData
             buffer = Buffer.alloc(zoneLength)
             fs.readSync(fd,buffer,0,zoneLength)
-            console.log('    zoneData',buffer.slice(0,20))
+            // console.log('    zoneData',buffer.slice(0,20))
           }
           break;
         case "ENDF":

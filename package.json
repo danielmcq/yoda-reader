@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/danielmcq/yoda-reader#readme",
   "dependencies": {
+    "bitmap-manipulation": "^2.0.0",
     "bmp-js": "^0.0.3"
   }
 }

@@ -2,6 +2,16 @@
 # yarn lockfile v1
 
 
+bitmap-manipulation@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/bitmap-manipulation/-/bitmap-manipulation-2.0.0.tgz#46c8ba328cf8f2b8a84971a586ae62a16267d5e5"
+  dependencies:
+    struct-fu "^1.1.1"
+
 bmp-js@^0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/bmp-js/-/bmp-js-0.0.3.tgz#64113e9c7cf1202b376ed607bf30626ebe57b18a"
+
+struct-fu@^1.1.1:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/struct-fu/-/struct-fu-1.2.0.tgz#a40b9eb60a41bb341228cff125fde4887daa85ac"
