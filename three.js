@@ -1,7 +1,6 @@
 'use strict'
 
 const fs = require('fs')
-const bmp = require('bmp-js')
 const bitmapManipulation = require('bitmap-manipulation')
 const path = require('path')
 
@@ -13,11 +12,11 @@ function main (args=[]) {
   fs.open(DATA_FILE_PATH, 'r', (err, fd) => {
     if (err) {
       if (err.code === 'ENOENT') {
-        console.error(`${DATA_FILE_PATH} does not exist`);
-        return;
+        console.error(`${DATA_FILE_PATH} does not exist`)
+        return
       }
 
-      throw err;
+      throw err
     }
 
     let keepReading = true
@@ -25,24 +24,24 @@ function main (args=[]) {
     while (keepReading) {
       buffer = Buffer.alloc(4)
       fs.readSync(fd,buffer,0,4)
-      let section = buffer.toString()
+      const section = buffer.toString()
       console.log('section',section)
 
       switch (section) {
-        case "VERS":
+        case 'VERS':
           buffer = Buffer.alloc(4)
           fs.readSync(fd,buffer,0,4)
           console.log('buffer',buffer)
-          let version = buffer.swap16().readUInt32LE()
+          const version = buffer.swap16().readUInt32LE()
           console.log('version',version)
-          break;
-        case "STUP":
-        case "SNDS":
-        case "PUZ2":
-        case "CHAR":
-        case "CHWP":
-        case "CAUX":
-        case "TNAM":
+          break
+        case 'STUP':
+        case 'SNDS':
+        case 'PUZ2':
+        case 'CHAR':
+        case 'CHWP':
+        case 'CAUX':
+        case 'TNAM':
           buffer = Buffer.alloc(4)
           fs.readSync(fd,buffer,0,4)
           const sectionLength = buffer.readUInt32LE()
@@ -50,8 +49,8 @@ function main (args=[]) {
           buffer = Buffer.alloc(sectionLength)
           fs.readSync(fd,buffer,0,sectionLength)
           console.log('  sectionData',buffer.slice(0,20))
-          break;
-        case "TILE":
+          break
+        case 'TILE':
           // Directory.CreateDirectory(@"Tiles");
           const TILE_DIR_PATH = path.join(__dirname, 'tiles')
           if (!fs.existsSync(TILE_DIR_PATH))
@@ -70,9 +69,9 @@ function main (args=[]) {
             const unknown = buffer.readUInt32LE()
 
             // Bitmap tile = new Bitmap(32, 32);
-            const bitmap = new bitmapManipulation.Bitmap(32, 32)
+            const bitmap = new bitmapManipulation.BMPBitmap(32, 32)
             const bmpData = bitmap.data()
-            let bmpDataOffset = 0
+            const bmpDataOffset = 0
 
             // for (int j = 0; j < 0x400; j++)
             for (let j = 0; j < 0x400; j++) {
@@ -84,23 +83,16 @@ function main (args=[]) {
               // console.log('    pixelColor', pixelColor)
 
               // tile.SetPixel(j % 32, j / 32, pixelColor);
-              bmpData[j%32,Math.floor(j/32)] = Buffer.from(new Uint8Array([pixelColor,pixelColor,pixelColor]))
-              // bmpDataOffset = bmpData.writeUInt8(pixelColor, bmpDataOffset)
-              // bmpDataOffset = bmpData.writeUInt8(pixelColor, bmpDataOffset)
-              // bmpDataOffset = bmpData.writeUInt8(pixelColor, bmpDataOffset)
+              bitmap.setPixel(j%32,Math.floor(j/32), Buffer.from(new Uint8Array([pixelColor,pixelColor,pixelColor])))
+              // bmpData[j%32,Math.floor(j/32)] = Buffer.from(new Uint8Array([pixelColor,pixelColor,pixelColor]))
             }
 
-if (i===0) {
             // tile.Save(string.Format(@"Tiles\{0}.png", i));
-            // const rawData = bmp.encode({data: Buffer.from(Array.from(bmpData.values()).reverse()), height: 32, width: 32})
-console.log(bmpData)
-            const rawData = bmp.encode({data: bmpData, height: 32, width: 32})
-            const tileFilename = path.join(TILE_DIR_PATH, `./${i}.raw`)
-            fs.writeFileSync(tileFilename, rawData)
-}
+            const tileFilename = path.join(TILE_DIR_PATH, `./${i}.bmp`)
+            bitmap.save(tileFilename)
           }
-          break;
-        case "ZONE":
+          break
+        case 'ZONE':
           buffer = Buffer.alloc(2)
           fs.readSync(fd,buffer,0,2)
           const count = buffer.readUInt16LE()
@@ -121,13 +113,13 @@ console.log(bmpData)
             fs.readSync(fd,buffer,0,zoneLength)
             // console.log('    zoneData',buffer.slice(0,20))
           }
-          break;
-        case "ENDF":
-          keepReading = false;
-          break;
+          break
+        case 'ENDF':
+          keepReading = false
+          break
         default:
-          throw new Error("Unknown section: " + section);
+          throw new Error(`Unknown section: ${ section}`)
       }
     }
-  });
+  })
 }
