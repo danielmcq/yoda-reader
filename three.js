@@ -4,6 +4,8 @@ const fs = require('fs')
 const bitmapManipulation = require('bitmap-manipulation')
 const path = require('path')
 
+const palette = require('./palette')
+
 const DATA_FILE_PATH = path.join(__dirname, 'YODESK.DTA')
 
 main()
@@ -69,9 +71,9 @@ function main (args=[]) {
             const unknown = buffer.readUInt32LE()
 
             // Bitmap tile = new Bitmap(32, 32);
-            const bitmap = new bitmapManipulation.BMPBitmap(32, 32)
-            const bmpData = bitmap.data()
-            const bmpDataOffset = 0
+            const tile = new bitmapManipulation.BMPBitmap(32, 32, 4)
+            // let canvas = new bitmapManipulation.canvas.Interleaved(32, 32, 4, 2)
+            // const tile = new bitmapManipulation.Bitmap(canvas)
 
             // for (int j = 0; j < 0x400; j++)
             for (let j = 0; j < 0x400; j++) {
@@ -83,13 +85,17 @@ function main (args=[]) {
               // console.log('    pixelColor', pixelColor)
 
               // tile.SetPixel(j % 32, j / 32, pixelColor);
-              bitmap.setPixel(j%32,Math.floor(j/32), Buffer.from(new Uint8Array([pixelColor,pixelColor,pixelColor])))
-              // bmpData[j%32,Math.floor(j/32)] = Buffer.from(new Uint8Array([pixelColor,pixelColor,pixelColor]))
+              const r = palette[pixelColor*4+2]
+              const g = palette[pixelColor*4+1]
+              const b = palette[pixelColor*4+0]
+              // const pixel = pixelColor === 0 ? 0xff00ff : parseInt(`0x${r.toString(16)}${g.toString(16)}${b.toString(16)}`)
+              const pixel = pixelColor === 0 ? 0xffffff << 8 : parseInt(`0x${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`)
+              tile.setPixel(j%32,Math.floor(j/32), pixel)
             }
 
             // tile.Save(string.Format(@"Tiles\{0}.png", i));
-            const tileFilename = path.join(TILE_DIR_PATH, `./${i}.bmp`)
-            bitmap.save(tileFilename)
+            const tileFilename = path.join(TILE_DIR_PATH, `./${i.toString().padStart(4,'0')}.png`)
+            tile.save(tileFilename)
           }
           break
         case 'ZONE':
@@ -100,7 +106,6 @@ function main (args=[]) {
             // unknown
             buffer = Buffer.alloc(2)
             fs.readSync(fd,buffer,0,2)
-            const unknown = buffer.readUInt16LE()
 
             // zoneLength
             buffer = Buffer.alloc(4)
