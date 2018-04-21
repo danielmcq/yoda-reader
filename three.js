@@ -3,6 +3,7 @@
 const fs = require('fs')
 const bitmapManipulation = require('bitmap-manipulation')
 const path = require('path')
+const ImageJS = require('imagejs')
 
 const palette = require('./palette')
 
@@ -71,7 +72,8 @@ function main (args=[]) {
             const unknown = buffer.readUInt32LE()
 
             // Bitmap tile = new Bitmap(32, 32);
-            const tile = new bitmapManipulation.BMPBitmap(32, 32, 4)
+            // const tile = new bitmapManipulation.BMPBitmap(32, 32, 4)
+            const tile = new ImageJS.Bitmap({width:32,height:32, color: {r: 255, g: 255, b: 255, a: 0}})
             // let canvas = new bitmapManipulation.canvas.Interleaved(32, 32, 4, 2)
             // const tile = new bitmapManipulation.Bitmap(canvas)
 
@@ -89,13 +91,16 @@ function main (args=[]) {
               const g = palette[pixelColor*4+1]
               const b = palette[pixelColor*4+0]
               // const pixel = pixelColor === 0 ? 0xff00ff : parseInt(`0x${r.toString(16)}${g.toString(16)}${b.toString(16)}`)
-              const pixel = pixelColor === 0 ? 0xffffff << 8 : parseInt(`0x${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`)
-              tile.setPixel(j%32,Math.floor(j/32), pixel)
+              const pixel = pixelColor === 0 ? 0XFFFFFF : parseInt(`0x${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`)
+              // tile.setPixel(j%32,Math.floor(j/32), pixel)
+              if (pixelColor)
+                tile.setPixel(j%32,Math.floor(j/32), r, g, b, 255)
             }
 
             // tile.Save(string.Format(@"Tiles\{0}.png", i));
             const tileFilename = path.join(TILE_DIR_PATH, `./${i.toString().padStart(4,'0')}.png`)
-            tile.save(tileFilename)
+            // tile.save(tileFilename)
+            tile.writeFile(tileFilename,{type: ImageJS.ImageType.PNG})
           }
           break
         case 'ZONE':
