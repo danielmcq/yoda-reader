@@ -2,20 +2,13 @@
   "name": "yoda-reader",
   "version": "0.1.0",
   "description": "",
-  "main": "three.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/danielmcq/yoda-reader.git"
-  },
+  "repository": "github:danielmcq/yoda-reader",
   "author": "Daniel McQuiston",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/danielmcq/yoda-reader/issues"
-  },
-  "homepage": "https://github.com/danielmcq/yoda-reader#readme",
   "dependencies": {
     "bitmap-manipulation": "^2.0.0",
     "http-server": "^0.11.1",
