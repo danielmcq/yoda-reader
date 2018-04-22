@@ -6,9 +6,11 @@ const tileReader = require('./lib/tileReader')
 
 main(process.argv.slice(2))
 
+const SECTION_NAME_SIZE = 4
+
 function main (args=[]) {
   const fileName = args.shift()
-  const DATA_FILE_PATH = path.join(__dirname, fileName||'YODESK.DTA')
+  const DATA_FILE_PATH = path.join(process.cwd(), fileName||'YODESK.DTA')
 
   fs.open(DATA_FILE_PATH, 'r', (err, fd) => {
     if (err) {
@@ -21,16 +23,16 @@ function main (args=[]) {
     }
 
     let keepReading = true
-    let buffer
+    const buffer = fs.readFileSync(fd)
+    let offset = 0
     while (keepReading) {
-      buffer = Buffer.alloc(4)
-      fs.readSync(fd,buffer,0,4)
-      const section = buffer.toString()
-      console.log('section',section)
+      const section = buffer.toString('ascii',offset,offset+SECTION_NAME_SIZE)
+      offset += SECTION_NAME_SIZE
+      console.log('section',section, `0x${offset.toString(16)}`)
 
       switch (section) {
         case 'VERS':
-          versionReader(fd)
+          offset = versionReader(buffer, offset)
           break
         case 'STUP':
         case 'SNDS':
@@ -39,64 +41,59 @@ function main (args=[]) {
         case 'CHWP':
         case 'CAUX':
         case 'TNAM':
-          genericSectionReader(fd)
+          offset = genericSectionReader(buffer, offset)
           break
         case 'TILE':
-          tileReader(fd)
+          offset = tileReader(buffer, offset)
           break
         case 'ZONE':
-          zoneReader(fd)
+          offset = zoneReader(buffer, offset)
           break
         case 'ENDF':
           keepReading = false
           break
         default:
-          throw new Error(`Unknown section: ${ section}`)
+          throw new Error(`Unknown section: ${section}, offset: ${offset.toString(16)}`)
       }
     }
   })
 }
 
-function versionReader (fd) {
-  const buffer = Buffer.alloc(4)
-  fs.readSync(fd,buffer,0,4)
-  console.log('buffer',buffer)
-  const version = buffer.swap16().readUInt32LE()
+function versionReader (buffer, offset) {
+  const buf = buffer.slice(offset, offset+4)
+  console.log('version buffer',buf)
+  const version = buf.swap16().readUInt32LE()
   console.log('version',version)
+
+  return offset + 4
 }
 
-function genericSectionReader (fd) {
-  let buffer
+function genericSectionReader (buffer, offset) {
+  const sectionLength = buffer.readUInt32LE(offset)
+  offset += 4
+  console.log('  sectionLength',`0x${sectionLength.toString(16)}`)
+  console.log('  sectionData',buffer.slice(offset,offset+20))
 
-  buffer = Buffer.alloc(4)
-  fs.readSync(fd,buffer,0,4)
-  const sectionLength = buffer.readUInt32LE()
-  console.log('  sectionLength',sectionLength)
-  buffer = Buffer.alloc(sectionLength)
-  fs.readSync(fd,buffer,0,sectionLength)
-  console.log('  sectionData',buffer.slice(0,20))
+  return offset + sectionLength
 }
 
-function zoneReader (fd) {
-  let buffer
-
-  buffer = Buffer.alloc(2)
-  fs.readSync(fd,buffer,0,2)
-  const count = buffer.readUInt16LE()
+function zoneReader (buffer, offset) {
+  const count = buffer.readUInt16LE(offset)
+  offset += 2
+  console.log('    zone count:',count)
   for (let i = 0; i < count; i++) {
     // unknown
-    buffer = Buffer.alloc(2)
-    fs.readSync(fd,buffer,0,2)
+    offset += 2
 
     // zoneLength
-    buffer = Buffer.alloc(4)
-    fs.readSync(fd,buffer,0,4)
-    const zoneLength = buffer.readUInt32LE()
+    const zoneLength = buffer.readUInt32LE(offset)
+    offset += 4
     // console.log('    zoneLength',zoneLength)
 
     // zoneData
-    buffer = Buffer.alloc(zoneLength)
-    fs.readSync(fd,buffer,0,zoneLength)
-    // console.log('    zoneData',buffer.slice(0,20))
+    // console.log('    zoneData',buffer.slice(offset,20))
+    offset += zoneLength
   }
+
+  return offset
 }
