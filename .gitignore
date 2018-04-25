@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# macOS specific
+.DS_Store
+
+# Project output
+out/
