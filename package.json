@@ -8,7 +8,7 @@
     "lint": "eslint index.js ./lib/",
     "lint:fix": "eslint --fix index.js ./lib/"
   },
-  "repository": "github:danielmcq/yoda-reader",
+  "repository": "github:danielmcq/yoda-reader-node",
   "author": "Daniel McQuiston",
   "license": "MIT",
   "dependencies": {
